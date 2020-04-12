@@ -16,8 +16,11 @@ struct Dataclimite {
     double item[22][2];//第一维是数据，第二维是控制码，按顺序从蒸发量一直向后
 };
 double res[30][2];
+double u, v;
 const int INF = 0;
 const int filename_lenth = 100;    
+const double PI = 3.1415926535;
+const double WindAngle = 22.5*PI/180;
 const string zero = "0";
 const string title = "STA_NO	DAT	LAT	LOG	ALTI	S_EVAP	L_EVAP	S_EVAP_C	L_EVAP_C	A_S_TEMP	D_MIN_S_TEMP	D_MAX_S_TEMP	A_S_TEMP_C	D_MIN_S_TEMP_C	D_MAX_S_TEMP_C	PRE_20_8	PRE_8_20	C_PRE_20_20	PRE_20_8_C	PRE_8_20_C	C_PRE_20_20_C	A_S_PRES	D_MAX_S_PRES	D_MIN_S_PRES	A_S_PRES_C	D_MAX_S_PRES_C	D_MIN_S_PRES_C	A_R_HUMI	MIN_R_HUMI	A_R_HUMI_C	MIN_R_HUMI_C	S_DUR	S_DUR_C	A_TEMP	D_MAX_TEMP	D_MIN_TEMP	A_TEMP_C	D_MAX_TEMP_C	D_MIN_TEMP_C	A_W_SPE	MAX_W_SPE	MAX_W_SPE_D	M_MAX_W_SPE	M_MAX_W_SPE_D	A_W_SPE_D	MAX_W_SPE_D	MAX_W_SPE_D	M_MAX_W_SPE_D	M_MAX_W_SPE_D";
 
