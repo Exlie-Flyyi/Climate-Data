@@ -83,14 +83,12 @@
       3. 更新ans
    3. 将最后一个月的数据写入文件中
 
-参考文献：全国地面气候资料（1961-1990）统计方法
+> 参考文献：全国地面气候资料（1961-1990）统计方法
+			 地面气象观测规范
 
-​					地面气象观测规范
+> [中国地面气候资料日值数据集(V3.0)](http:://data.cma.cn/data/cdcdetail/dataCode/SURF_CLI_CHN_MUL_DAY_V3.0.html)
 
-注：数据说明文档来源 ： SURF_CLI_CHN_MUL_DAY_DOCU_C.Doc（http://data.cma.cn/data/cdcdetail/dataCode/SURF_CLI_CHN_MUL_DAY_V3.0.html）
-
-​	
-
+> 数据说明文档来源[SURF_CLI_CHN_MUL_DAY_DOCU_C.Doc](http:://image.data.cma.cn/static/doc/A/SURF_CLI_CHN_MUL_DAY_V3.0/SURF_CLI_CHN_MUL_DAY_DOCU_C.doc)
 
 
 ## 平均风向计算
@@ -138,6 +136,7 @@ double wind_angle(double u, double v){
 ~~~
 
 #### 运用公式：
+> 单位矢量法：`Au`为单位矢量的平均风向 ,`U` 为单位风速矢量在东西方向上的平均分量 ,`V`  为单位风速矢量在南北方向上的平均分量。
 
 $$
 A_u = arctan({\frac UV})
