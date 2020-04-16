@@ -83,10 +83,94 @@
       3. 更新ans
    3. 将最后一个月的数据写入文件中
 
-参考文献：全国地面气候资料（1961-1990）统计方法
+> 参考文献：全国地面气候资料（1961-1990）统计方法
+			 地面气象观测规范
 
-​					地面气象观测规范
+> [中国地面气候资料日值数据集(V3.0)](http:://data.cma.cn/data/cdcdetail/dataCode/SURF_CLI_CHN_MUL_DAY_V3.0.html)
 
-注：数据说明文档来源 ： SURF_CLI_CHN_MUL_DAY_DOCU_C.Doc（http://data.cma.cn/data/cdcdetail/dataCode/SURF_CLI_CHN_MUL_DAY_V3.0.html）
+> 数据说明文档来源[SURF_CLI_CHN_MUL_DAY_DOCU_C.Doc](http:://image.data.cma.cn/static/doc/A/SURF_CLI_CHN_MUL_DAY_V3.0/SURF_CLI_CHN_MUL_DAY_DOCU_C.doc)
 
-​	
+
+## 平均风向计算
+
+#### u、v矢量换算为方向角
+
+- `v`是南北分量，`u`是东西方向分量
+- 由于`y=arctan(x)`值域为`-π/2~π/2`,应转化为`0~360`方向角
+- 前四种情况在四个象限按顺时针旋转，后四种是北东南西四个方向
+
+~~~c++
+const double PI = 3.1415926535;
+const double WindAngle = 22.5*PI/180;
+double u[22], v[22];//风向，v是南北分量，u是东西方向分量
+double wind_angle(double u, double v){
+    double temp = atan(u/v)*180/PI;
+    if(u > 0 && v > 0){
+        return temp;
+    }
+    else if(u > 0 && v < 0){
+        return 180+temp; 
+    }
+    else if(u < 0 && v < 0){
+        return 180+temp;
+    }
+    else if(u < 0 && v > 0){
+        return 360+temp;
+    }
+    else if(u == 0 && v > 0){
+        return 0;
+    }
+    else if(u == 0 && v < 0){
+        return 180;
+    }
+    else if(u > 0 && v == 0){
+        return 90;
+    }
+    else if(u < 0 && v == 0){
+        return 270;
+    }
+    else if(u == 0 && v == 0){
+        return 0;
+    }
+}
+~~~
+
+#### 运用公式：
+> 单位矢量法：`Au`为单位矢量的平均风向 ,`U` 为单位风速矢量在东西方向上的平均分量 ,`V`  为单位风速矢量在南北方向上的平均分量。
+
+$$
+A_u = arctan({\frac UV})
+$$
+
+$$
+U = {\frac 1N} * \sum_{i=0}^N * sin(A_i)
+$$
+
+$$
+V = {\frac 1N} * \sum_{i=0}^N * cos(A_i)
+$$
+
+~~~c++
+//get_sum(Dataclimite &info)里        
+
+else if((0 == info.item[i][1]|| 9 == info.item[i][1]) && info.item[i][0] >= 1 && info.item[i][0] <= 16){
+            u[i] += sin(info.item[i][0]*WindAngle);
+            v[i] += cos(info.item[i][0]*WindAngle);
+            res[i][1]++;
+        }
+
+//get_ave(Dataclimite &a)里
+if(i == 19 || i == 21){
+    u[i] /= res[i][1] * 1.0;
+    v[i] /= res[i][1] * 1.0;
+    a.item[i][0] = wind_angle(u[i], v[i]);  
+    a.item[i][1] = 0;
+    //cout << u[i] << " " << v[i] << " " << a.item[i][0] << endl;
+    u[i] = 0, v[i] = 0;
+}
+
+~~~
+
+测试数据：`15 16 14 16 7 8 15 7 8 16 15 8 14 7 8 7 16 13 16 16 15 8 1 14 14 7 13 15 15 15 8`
+
+计算结果：`321.524`
