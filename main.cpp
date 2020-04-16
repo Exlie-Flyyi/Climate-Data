@@ -9,6 +9,7 @@
 #include <io.h>
 #include <ctime>
 #include <cstdlib>
+#include <bits/stdc++.h>
 using namespace std;
 struct Dataclimite {
     string STA_NO, YEAR, MONTH, DAY, DAT;
@@ -16,21 +17,24 @@ struct Dataclimite {
     double item[22][2];//第一维是数据，第二维是控制码，按顺序从蒸发量一直向后
 };
 double res[30][2];
-double u, v;
+double u[22], v[22];//风向，v是南北分量，u是东西方向分量
 const int INF = 0;
 const int filename_lenth = 100;    
 const double PI = 3.1415926535;
 const double WindAngle = 22.5*PI/180;
 const string zero = "0";
-const string title = "STA_NO	DAT	LAT	LOG	ALTI	S_EVAP	L_EVAP	S_EVAP_C	L_EVAP_C	A_S_TEMP	D_MIN_S_TEMP	D_MAX_S_TEMP	A_S_TEMP_C	D_MIN_S_TEMP_C	D_MAX_S_TEMP_C	PRE_20_8	PRE_8_20	C_PRE_20_20	PRE_20_8_C	PRE_8_20_C	C_PRE_20_20_C	A_S_PRES	D_MAX_S_PRES	D_MIN_S_PRES	A_S_PRES_C	D_MAX_S_PRES_C	D_MIN_S_PRES_C	A_R_HUMI	MIN_R_HUMI	A_R_HUMI_C	MIN_R_HUMI_C	S_DUR	S_DUR_C	A_TEMP	D_MAX_TEMP	D_MIN_TEMP	A_TEMP_C	D_MAX_TEMP_C	D_MIN_TEMP_C	A_W_SPE	MAX_W_SPE	MAX_W_SPE_D	M_MAX_W_SPE	M_MAX_W_SPE_D	A_W_SPE_D	MAX_W_SPE_D	MAX_W_SPE_D	M_MAX_W_SPE_D	M_MAX_W_SPE_D";
+const string title = "STA_NO	DAT	LAT	LOG	ALTI	S_EVAP	L_EVAP	S_EVAP_C	L_EVAP_C	A_S_TEMP	D_MAX_S_TEMP	D_MIN_S_TEMP	A_S_TEMP_C	D_MAX_S_TEMP_C	D_MIN_S_TEMP_C	PRE_20_8	PRE_8_20	C_PRE_20_20	PRE_20_8_C	PRE_8_20_C	C_PRE_20_20_C	A_S_PRES	D_MAX_S_PRES	D_MIN_S_PRES	A_S_PRES_C	D_MAX_S_PRES_C	D_MIN_S_PRES_C	A_R_HUMI	MIN_R_HUMI	A_R_HUMI_C	MIN_R_HUMI_C	S_DUR	S_DUR_C	A_TEMP	D_MAX_TEMP	D_MIN_TEMP	A_TEMP_C	D_MAX_TEMP_C	D_MIN_TEMP_C	A_W_SPE	MAX_W_SPE	MAX_W_SPE_D	M_MAX_W_SPE	M_MAX_W_SPE_D	A_W_SPE_D	MAX_W_SPE_D	MAX_W_SPE_D	M_MAX_W_SPE_D	M_MAX_W_SPE_D";
 
 void station_file();
 void ave_month_file();
 void get_ave(Dataclimite &a);
 void stan_unit(Dataclimite &a);
+double wind_angle(double u, double v);
+
 
 ostream &operator<<(ostream &out, const Dataclimite &data);
 istream &operator>>(istream &in, Dataclimite &data);
+
 int random(int n){
     return (long long)rand() * rand() % n; 
 }
@@ -42,6 +46,36 @@ int main(){
 	system("pause");
 }
 
+double wind_angle(double u, double v){
+    double temp = atan(u/v)*180/PI;
+    if(u > 0 && v > 0){
+        return temp;
+    }
+    else if(u > 0 && v < 0){
+        return 180+temp; 
+    }
+    else if(u < 0 && v < 0){
+        return 180+temp;
+    }
+    else if(u < 0 && v > 0){
+        return 360+temp;
+    }
+    else if(u == 0 && v > 0){
+        return 0;
+    }
+    else if(u == 0 && v < 0){
+        return 180;
+    }
+    else if(u > 0 && v == 0){
+        return 90;
+    }
+    else if(u < 0 && v == 0){
+        return 270;
+    }
+    else if(u == 0 && v == 0){
+        return 0;
+    }
+}
 void get_sum(Dataclimite &info){
     for(int i = 0; i < 2; i++){
         if((0 == info.item[i][1] || 9 == info.item[i][1]) && info.item[i][0] != 32766 ) res[i][0] += info.item[i][0], res[i][1]++;
@@ -53,7 +87,7 @@ void get_sum(Dataclimite &info){
             //cout << rand()%10 << endl;    
         if(32700 == info.item[i][0]) {
             info.item[i][0] = (double)random(1e4) / 1e4, info.item[i][1] = 0;
-            if(i == 5) cout << info.item[5][0] << endl;
+            //if(i == 5) cout << info.item[5][0] << endl;
         }   
         else if((int)info.item[i][0]/1000 == 32 && info.item[i][0] != 32766) info.item[i][0] -= 32000, info.item[i][1] = 0;
         else if((int)info.item[i][0]/1000 == 31) info.item[i][0] -= 31000, info.item[i][1] = 0;
@@ -71,12 +105,16 @@ void get_sum(Dataclimite &info){
     for(int i = 14; i < 19; i++){
         if(0 == info.item[i][1]|| 9 == info.item[i][1]) res[i][0] += info.item[i][0], res[i][1]++;
     }
-                    
-    if(0 == info.item[20][1]|| 9 == info.item[20][1]) res[20][0] += info.item[20][0], res[20][1]++;
-    if((0 == info.item[19][1]|| 9 == info.item[19][1]) && info.item[19][0] >= 1 && info.item[19][0] <= 16) 
-        res[19][0] += info.item[19][0], res[19][1]++;
-    if((0 == info.item[21][1]|| 9 == info.item[21][1]) && info.item[21][0] >= 1 && info.item[21][0] <= 16) 
-        res[21][0] += info.item[21][0], res[21][1]++;
+    for(int i = 19; i < 22; i++){
+        if(20 == i){                
+            if(0 == info.item[i][1]|| 9 == info.item[i][1]) res[i][0] += info.item[i][0], res[i][1]++;
+        }
+        else if((0 == info.item[i][1]|| 9 == info.item[i][1]) && info.item[i][0] >= 1 && info.item[i][0] <= 16){
+            u[i] += sin(info.item[i][0]*WindAngle);
+            v[i] += cos(info.item[i][0]*WindAngle);
+            res[i][1]++;
+        }
+    }
 }
 
 void get_ave(Dataclimite &a){
@@ -86,12 +124,21 @@ void get_ave(Dataclimite &a){
 			a.item[i][1] = 8;
 		}
 		else{
-			double ave = res[i][0] / res[i][1] * 1.0;
-			a.item[i][0] = ave;
-			a.item[i][1] = 0;
-		}
+            if(i == 19 || i == 21){
+                u[i] /= res[i][1] * 1.0;
+                v[i] /= res[i][1] * 1.0;
+			    a.item[i][0] = wind_angle(u[i], v[i]);  
+			    a.item[i][1] = 0;
+                //cout << u[i] << " " << v[i] << " " << a.item[i][0] << endl;
+                u[i] = 0, v[i] = 0;
+            }
+            else{
+                double ave = res[i][0] / res[i][1] * 1.0;
+                a.item[i][0] = ave;
+                a.item[i][1] = 0;
+            }
+        }
 	}
-    //cout << res[13][0] << " " << res[13][1] << endl;
 	for(int i = 0; i < 22; i++){
 		res[i][0] = res[i][1] = 0;
 	}
@@ -161,7 +208,7 @@ void ave_month_file(){
         sss << "E:\\climate\\ave_month\\"<<info.STA_NO << "aver_month.txt";
         linenum = sss.str();//改成sss会有bug，不改的话就在源文件里输出最后一个月？？？？？？？
         //找到原因啦，文件名字符串数组开太小了。。?
-        cout  << sss.str() <<endl;
+        //cout  << sss.str() <<endl;
         char p[filename_lenth];
         strcpy(p,linenum.c_str());		
         ifstream file2(p);
@@ -266,6 +313,7 @@ ostream &operator<<(ostream &out, const Dataclimite &data){
 		<< "\t\t" << fixed << setprecision(3)<< data.item[8][0] << "\t" << data.item[9][0] << "\t\t" << data.item[10][0] << "\t\t" << fixed << setprecision(0)<< data.item[8][1] << "\t\t" << data.item[9][1] << "\t\t" << data.item[10][1] 
 		<< "\t\t" << fixed << setprecision(3)<< data.item[11][0] << "\t\t" << data.item[12][0] << "\t\t" << fixed << setprecision(0)<< data.item[11][1] << "\t\t" << data.item[12][1] << "\t\t" << fixed << setprecision(3)<<  data.item[13][0] << "\t" << fixed << setprecision(0)<<  data.item[13][1] 
 		<< "\t" << fixed << setprecision(3)<< data. item[14][0] << "\t" << data.item[15][0] << "\t\t" << data.item[16][0] << "\t\t" << fixed << setprecision(0)<< data.item[14][1] << "\t\t" << data.item[15][1] << "\t\t" << data.item[16][1] 
-		<< "\t\t" << fixed << setprecision(3)<< data.item[17][0] << "\t" << data.item[18][0] << "\t\t" << fixed << setprecision(0) << data.item[19][0] << "\t\t" << fixed << setprecision(3)<< data.item[20][0] << "\t\t" << fixed << setprecision(0)<< data.item[21][0] << "\t\t" << data.item[17][1] << "\t\t" << data.item[18][1] << "\t\t" << data.item[19][1] << "\t\t" << data.item[20][1] << "\t\t" << data.item[21][1] << endl;
+		<< "\t\t" << fixed << setprecision(3)<< data.item[17][0] << "\t" << data.item[18][0] << "\t\t" << fixed << setprecision(3) << data.item[19][0] << "\t\t" << fixed << setprecision(3)<< data.item[20][0] << "\t\t" << fixed << setprecision(3)<< data.item[21][0] 
+        << "\t\t" << fixed << setprecision(0) << data.item[17][1] << "\t\t" << data.item[18][1] << "\t\t" << data.item[19][1] << "\t\t" << data.item[20][1] << "\t\t" << data.item[21][1] << endl;
 	return out;
 }
